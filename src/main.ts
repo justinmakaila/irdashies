@@ -14,12 +14,19 @@ if (started) app.quit();
 
 const overlayManager = new OverlayManager();
 const telemetrySink = new TelemetrySink();
-const bridge = new IRacingBridge();
-
-bridge.connectionEmitter.on('simConnect', (isConnected) => {
-  console.log('Sending running state to window:', isConnected);
-  overlayManager.publishMessage('runningState', isConnected);
+const bridge = new IRacingBridge({
+  retryConnection: true,
+  retryIntervalSeconds: 1,
 });
+
+bridge.connectionEmitter
+  .on('simConnect', (isConnected) => {
+    console.log('Sending running state to window:', isConnected);
+    overlayManager.publishMessage('runningState', isConnected);
+  })
+  .on('telemetryConnect', (isConnected) => {
+    console.log('Sending telemetry state to window:', isConnected);
+  });
 
 bridge.telemetryEmitter
   .on('telemetry', (telemetry) => {
